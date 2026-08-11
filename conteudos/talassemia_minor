@@ -10,10 +10,11 @@ DADOS = {
             "cor": "#4A7FE0",
             "cor2": "#6FA0F5",
             "texto": (
-                "A talassemia minor é apenas uma característica genética herdada da família, "
-                "não uma doença grave.\n\n"
-                "Significa que os glóbulos vermelhos do(a) {nome} são um pouquinho menores "
-                "que o habitual. A maioria das pessoas vive com isso sem sentir absolutamente nada!"
+                "A talassemia minor (ou traço talassêmico) é uma característica genética "
+                "herdada da família. NÃO é uma doença grave!\n\n"
+                "Significa apenas que os glóbulos vermelhos do(a) {nome} são um pouquinho "
+                "menores e mais pálidos que o habitual. A maioria das pessoas vive com "
+                "isso sem sentir absolutamente nada."
             ),
         },
         {
@@ -22,9 +23,10 @@ DADOS = {
             "cor": "#2FAE9E",
             "cor2": "#5FCBBD",
             "texto": (
-                "Pode aparecer uma anemia bem leve em exames de rotina, mas que raramente causa sintomas.\n\n"
-                "IMPORTANTE: Como os glóbulos são pequenos, o exame pode parecer com falta de ferro, "
-                "mas dar ferro sem necessidade não ajuda. O acompanhamento médico é quem orienta."
+                "Pode causar uma anemia bem leve em exames de rotina, mas que quase nunca dá sintomas.\n\n"
+                "ATENÇÃO: Como as células são pequenas, o exame é muito parecido com falta de ferro. "
+                "Porém, dar ferro SEM necessidade NÃO resolve e pode fazer mal! O acompanhamento "
+                "médico serve para evitar tratamentos desnecessários."
             ),
         },
         {
@@ -33,20 +35,21 @@ DADOS = {
             "cor": "#E0A233",
             "cor2": "#F0C169",
             "texto": (
-                "Vida normal e saudável! A criança pode brincar, praticar esportes e estudar sem restrições.\n"
-                "• Manter uma alimentação equilibrada\n"
-                "• Fazer consultas de rotina com o pediatra\n"
-                "• Guardar os exames para mostrar em consultas futuras"
+                "Vida normal! O(A) {nome} pode brincar, correr, estudar e fazer de tudo.\n"
+                "• Manter uma alimentação equilibrada e saudável\n"
+                "• Não precisa tomar remédios ou ferro para isso\n"
+                "• Informar outros médicos no futuro para não confundirem com falta de ferro"
             ),
         },
     ],
     "alerta_titulo": "Quando procurar o hospital",
     "alerta_itens": [
-        "Cansaço excessivo ou palidez muito forte que não era normal",
-        "Febre persistente ou outros sintomas comuns da infância",
-        "Acompanhamento de rotina conforme orientação médica",
+        "A talassemia minor isolada NÃO costuma causar emergências",
+        "Procure o hospital em casos comuns de infecções, febre alta ou mal-estar",
+        "Mantenha as consultas de rotina com o pediatra em dia",
     ],
     "rodape": (
-        "Este material tem caráter educativo e não substitui a orientação médica individual."
+        "Este material tem caráter informativo para apoiar as orientações médicas e de enfermagem "
+        "fornecidas durante a consulta. Em caso de dúvidas, procure a equipe de saúde responsável."
     ),
 }
