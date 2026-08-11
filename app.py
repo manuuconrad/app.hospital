@@ -2,7 +2,7 @@ import io
 import os
 import math
 import random
-import importlib
+import importlib.util
 import requests
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
@@ -12,21 +12,27 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 # ==============================================================================
 
 CONTEUDOS = {}
-PASTA_CONTEUDOS = os.path.join(os.path.dirname(__file__), "conteudos")
+PASTA_SCRIPT = os.path.dirname(os.path.abspath(__file__)) if "__file__" in locals() else "."
+PASTA_CONTEUDOS = os.path.join(PASTA_SCRIPT, "conteudos")
 
 if os.path.exists(PASTA_CONTEUDOS):
-    for arquivo in os.listdir(PASTA_CONTEUDOS):
+    for arquivo in sorted(os.listdir(PASTA_CONTEUDOS)):
         if arquivo.endswith(".py") and not arquivo.startswith("__"):
+            caminho_arquivo = os.path.join(PASTA_CONTEUDOS, arquivo)
             nome_modulo = arquivo[:-3]
-            modulo = importlib.import_module(f"conteudos.{nome_modulo}")
-            if hasattr(modulo, "DADOS"):
-                CONTEUDOS[nome_modulo] = modulo.DADOS
+            try:
+                spec = importlib.util.spec_from_file_location(nome_modulo, caminho_arquivo)
+                modulo = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(modulo)
+                if hasattr(modulo, "DADOS"):
+                    CONTEUDOS[nome_modulo] = modulo.DADOS
+            except Exception as e:
+                st.warning(f"Erro ao carregar o arquivo {arquivo}: {e}")
 
 # ==============================================================================
 # 2. SISTEMA DE FONTES E MOTOR GRÁFICO
 # ==============================================================================
 
-PASTA_SCRIPT = os.path.dirname(os.path.abspath(__file__)) if "__file__" in locals() else "."
 PASTA_FONTES = os.path.join(PASTA_SCRIPT, "fonts")
 URL_BASE_POPPINS = "https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/"
 
@@ -385,14 +391,14 @@ st.caption("Ferramenta de Literacia em Saúde Infantil")
 st.markdown("---")
 
 if not CONTEUDOS:
-    st.error("Nenhuma doença foi encontrada dentro da pasta 'conteudos'. Crie os arquivos .py lá dentro.")
+    st.error("Nenhuma doença foi encontrada dentro da pasta 'conteudos'. Verifique se criou a pasta 'conteudos' e colocou os arquivos .py lá dentro.")
 else:
     col1, col2 = st.columns(2)
 
     with col1:
         nome_paciente = st.text_input("Nome da Criança:", value="Luís")
 
-    opcoes_mapeadas = {dados["nome_select"]: chave for chave, dados in CONTEUDOS.items()}
+    opcoes_mapeadas = {dados["nome_select"]: chave for chave, dados in CONTEUDOS.items() if "nome_select" in dados}
 
     with col2:
         opcao_selecionada = st.selectbox(
