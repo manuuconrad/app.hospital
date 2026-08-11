@@ -2,163 +2,28 @@ import io
 import os
 import math
 import random
+import importlib
 import requests
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 # ==============================================================================
-# 1. BANCO DE DADOS DE CONTEÚDO (ADICIONE OU EDITE NOVAS DOENÇAS AQUI)
+# 1. CARREGAMENTO AUTOMÁTICO DE CONTEÚDOS DA PASTA 'conteudos'
 # ==============================================================================
 
-CONTEUDOS = {
-    "anemia_falciforme": {
-        "nome_select": "Anemia Falciforme",
-        "hospital": "Hospital Pequeno Príncipe",
-        "titulo_diagnostico": "Anemia Falciforme",
-        "tipo_ilustracao": "anemia_falciforme",
-        "secoes": [
-            {
-                "icone": "gota",
-                "titulo": "O que o(a) {nome} tem?",
-                "cor": "#4A7FE0",
-                "cor2": "#6FA0F5",
-                "texto": (
-                    "Dentro do nosso sangue existem milhões de \"carrinhos vermelhos\" "
-                    "chamados glóbulos vermelhos. Eles levam oxigênio para todo o corpo, "
-                    "dos pés até o cérebro.\n\n"
-                    "Normalmente esses carrinhos são redondinhos e flexíveis, o que "
-                    "ajuda a passar até pelos caminhos mais estreitos do corpo.\n\n"
-                    "O(a) {nome} nasceu com uma característica genética que muda um "
-                    "pouco esse formato: em vez de redondos, alguns ficam parecidos "
-                    "com uma foice — por isso o nome \"falciforme\". Não é uma doença "
-                    "que se pega de alguém, é algo que já veio desde o nascimento."
-                ),
-            },
-            {
-                "icone": "estrela",
-                "titulo": "O que isso faz no corpo?",
-                "cor": "#2FAE9E",
-                "cor2": "#5FCBBD",
-                "texto": (
-                    "Os glóbulos em formato de foice são mais durinhos e podem ter "
-                    "dificuldade de passar pelos vasinhos mais estreitos — como um "
-                    "carrinho grande tentando passar por uma ruazinha apertada.\n\n"
-                    "Isso pode causar dor (às vezes forte) em braços, pernas, barriga "
-                    "ou costas, cansaço, e uma chance maior de infecções.\n\n"
-                    "Esses episódios são chamados de \"crise\". Não significa que algo "
-                    "deu errado — é uma característica da própria condição, e a "
-                    "equipe médica sabe como agir quando ela acontece."
-                ),
-            },
-            {
-                "icone": "escudo",
-                "titulo": "O caminho do cuidado",
-                "cor": "#E0A233",
-                "cor2": "#F0C169",
-                "texto": (
-                    "O acompanhamento do(a) {nome} vai incluir consultas regulares "
-                    "com a equipe de hematologia, que vai acompanhar de perto e "
-                    "ajustar os cuidados ao longo do tempo.\n\n"
-                    "Algumas atitudes do dia a dia ajudam bastante:\n"
-                    "• Manter o(a) {nome} bem hidratado(a), sempre\n"
-                    "• Evitar calor ou frio excessivos\n"
-                    "• Respeitar o cansaço e o descanso\n"
-                    "• Não faltar às consultas e exames marcados\n\n"
-                    "As orientações específicas de medicação e doses estão na "
-                    "receita entregue pelo médico responsável."
-                ),
-            },
-        ],
-        "alerta_titulo": "Quando procurar o hospital com urgência",
-        "alerta_itens": [
-            "Qualquer febre, mesmo baixa",
-            "Dor muito forte que não passa",
-            "Dificuldade para respirar ou dor no peito",
-            "Fraqueza súbita de um lado do corpo ou dificuldade para falar",
-            "Barriga muito inchada ou dura",
-            "Sonolência excessiva ou dificuldade para acordar",
-            "Palidez muito forte",
-        ],
-        "rodape": (
-            "Este material tem caráter educativo e não substitui a orientação "
-            "médica individual. Qualquer dúvida sobre tratamento, medicação ou "
-            "sintomas específicos, converse com a equipe médica responsável."
-        ),
-    },
-    
-    "talassemia_minor": {
-        "nome_select": "Talassemia Minor",
-        "hospital": "Hospital Pequeno Príncipe",
-        "titulo_diagnostico": "Talassemia Minor (Traço Talassêmico)",
-        "tipo_ilustracao": "talassemia_minor",
-        "secoes": [
-            {
-                "icone": "gota",
-                "titulo": "O que é a Talassemia Minor?",
-                "cor": "#4A7FE0",
-                "cor2": "#6FA0F5",
-                "texto": (
-                    "O nosso sangue possui glóbulos vermelhos (hemácias), que são "
-                    "responsáveis por levar oxigênio para todo o corpo por meio de "
-                    "uma proteína chamada hemoglobina.\n\n"
-                    "Ter Talassemia Minor (ou Traço Talassêmico) significa apenas que o "
-                    "corpo do(a) {nome} produz essas hemácias em um tamanho um pouco "
-                    "menor e mais pálido do que o habitual.\n\n"
-                    "É uma característica genética hereditária (passada dos pais para "
-                    "os filhos) e totalmente saudável. Não é uma doença grave nem um "
-                    "motivo de preocupação."
-                ),
-            },
-            {
-                "icone": "estrela",
-                "titulo": "Como isso afeta o dia a dia?",
-                "cor": "#2FAE9E",
-                "cor2": "#5FCBBD",
-                "texto": (
-                    "Na prática, não afeta em nada! O(a) {nome} pode brincar, correr, "
-                    "estudar e ter uma rotina completamente normal e sem limitações.\n\n"
-                    "Nos exames de sangue, é comum aparecer uma 'anemia leve', mas o "
-                    "próprio organismo compensa isso fabricando mais glóbulos vermelhos.\n\n"
-                    "Atenção: essa condição NÃO é causada por falta de ferro! Por isso, "
-                    "não adianta tomar remédios ou suplementos de ferro por conta própria."
-                ),
-            },
-            {
-                "icone": "escudo",
-                "titulo": "Cuidados e Recomendações",
-                "cor": "#E0A233",
-                "cor2": "#F0C169",
-                "texto": (
-                    "O acompanhamento é bem simples e serve para garantir a saúde geral:\n\n"
-                    "• Vida ativa: incentive a prática de atividades físicas e esportes\n"
-                    "• Alimentação saudável: mantenha uma dieta variada e equilibrada\n"
-                    "• Uso de ferro: só utilize se o médico indicar após exames específicos\n"
-                    "• Rotina: mantenha as consultas com o pediatra em dia\n"
-                    "• Futuro: no futuro, em idade adulta, é recomendado aconselhamento "
-                    "genético para planejamento familiar."
-                ),
-            },
-        ],
-        "alerta_titulo": "Sinais para prestar atenção",
-        "alerta_itens": [
-            "Cansaço exagerado ou fraqueza fora do comum para a rotina da criança",
-            "Palidez muito acentuada na pele, lábios ou parte interna das pálpebras",
-            "Febre ou episódios de infecção acompanhados de desânimo",
-            "Pele ou olhos amarelados (icterícia)",
-            "Dúvidas antes de iniciar qualquer suplemento de ferro prescrito por outro profissional",
-        ],
-        "rodape": (
-            "Este material tem caráter educativo e não substitui a orientação "
-            "médica individual. Qualquer dúvida sobre o acompanhamento do(a) seu(sua) filho(a), "
-            "converse com a equipe médica responsável."
-        ),
-    },
+CONTEUDOS = {}
+PASTA_CONTEUDOS = os.path.join(os.path.dirname(__file__), "conteudos")
 
-    # 💡 PARA ADICIONAR UMA NOVA DOENÇA NO FUTURO, BASTA DUPLICAR UM BLOCO
-}
+if os.path.exists(PASTA_CONTEUDOS):
+    for arquivo in os.listdir(PASTA_CONTEUDOS):
+        if arquivo.endswith(".py") and not arquivo.startswith("__"):
+            nome_modulo = arquivo[:-3]
+            modulo = importlib.import_module(f"conteudos.{nome_modulo}")
+            if hasattr(modulo, "DADOS"):
+                CONTEUDOS[nome_modulo] = modulo.DADOS
 
 # ==============================================================================
-# 2. SISTEMA DE FONTES E MOTOR GRÁFICO (NÃO PRECISA MEXER AQUI)
+# 2. SISTEMA DE FONTES E MOTOR GRÁFICO
 # ==============================================================================
 
 PASTA_SCRIPT = os.path.dirname(os.path.abspath(__file__)) if "__file__" in locals() else "."
@@ -352,7 +217,7 @@ def desenhar_ilustracao_dinamica(draw, tipo, box, fontes):
         tw2 = draw.textlength("Em foice", font=fontes["legenda"])
         draw.text((cx_fal - tw2/2, y1 - 22*SS), "Em foice", font=fontes["legenda"], fill=(190, 50, 50))
 
-    elif tipo == "talassemia_minor":
+    else:
         cx_norm, r_norm = x0 + w_box * 0.28, 20 * SS
         draw.ellipse([cx_norm - r_norm, cy - r_norm + 2*SS, cx_norm + r_norm, cy + r_norm + 2*SS], fill=(220, 180, 180, 150))
         draw.ellipse([cx_norm - r_norm, cy - r_norm, cx_norm + r_norm, cy + r_norm], fill=(235, 60, 60))
@@ -369,8 +234,8 @@ def desenhar_ilustracao_dinamica(draw, tipo, box, fontes):
 
         tw1 = draw.textlength("Normal", font=fontes["legenda"])
         draw.text((cx_norm - tw1/2, y1 - 22*SS), "Normal", font=fontes["legenda"], fill=(100, 110, 125))
-        tw2 = draw.textlength("Menor/Pálida", font=fontes["legenda"])
-        draw.text((cx_micro - tw2/2, y1 - 22*SS), "Menor/Pálida", font=fontes["legenda"], fill=(190, 60, 60))
+        tw2 = draw.textlength("Alterada", font=fontes["legenda"])
+        draw.text((cx_micro - tw2/2, y1 - 22*SS), "Alterada", font=fontes["legenda"], fill=(190, 60, 60))
 
 def gerar_imagem_panfleto(dados, nome_paciente):
     random.seed(7)
@@ -519,33 +384,35 @@ st.caption("Ferramenta de Literacia em Saúde Infantil")
 
 st.markdown("---")
 
-col1, col2 = st.columns(2)
+if not CONTEUDOS:
+    st.error("Nenhuma doença foi encontrada dentro da pasta 'conteudos'. Crie os arquivos .py lá dentro.")
+else:
+    col1, col2 = st.columns(2)
 
-with col1:
-    nome_paciente = st.text_input("Nome da Criança:", value="Luís")
+    with col1:
+        nome_paciente = st.text_input("Nome da Criança:", value="Luís")
 
-# Mapeia dinamicamente as opções cadastradas no topo
-opcoes_mapeadas = {dados["nome_select"]: chave for chave, dados in CONTEUDOS.items()}
+    opcoes_mapeadas = {dados["nome_select"]: chave for chave, dados in CONTEUDOS.items()}
 
-with col2:
-    opcao_selecionada = st.selectbox(
-        "Selecione o Diagnóstico:",
-        list(opcoes_mapeadas.keys())
-    )
+    with col2:
+        opcao_selecionada = st.selectbox(
+            "Selecione o Diagnóstico:",
+            list(opcoes_mapeadas.keys())
+        )
 
-if st.button("🚀 Gerar Material Visual (PNG)", type="primary"):
-    chave_doenca = opcoes_mapeadas[opcao_selecionada]
-    dados = CONTEUDOS[chave_doenca]
-    
-    buffer, img_obj = gerar_imagem_panfleto(dados, nome_paciente)
-    
-    st.success("Infográfico gerado com sucesso!")
-    
-    st.image(img_obj, caption=f"Guia Ilustrado - {nome_paciente}", use_container_width=True)
-    
-    st.download_button(
-        label="📥 Baixar Infográfico em Alta Resolução (PNG)",
-        data=buffer,
-        file_name=f"Guia_Ilustrado_{chave_doenca}_{nome_paciente}.png",
-        mime="image/png"
-    )
+    if st.button("🚀 Gerar Material Visual (PNG)", type="primary"):
+        chave_doenca = opcoes_mapeadas[opcao_selecionada]
+        dados = CONTEUDOS[chave_doenca]
+        
+        buffer, img_obj = gerar_imagem_panfleto(dados, nome_paciente)
+        
+        st.success("Infográfico gerado com sucesso!")
+        
+        st.image(img_obj, caption=f"Guia Ilustrado - {nome_paciente}", use_container_width=True)
+        
+        st.download_button(
+            label="📥 Baixar Infográfico em Alta Resolução (PNG)",
+            data=buffer,
+            file_name=f"Guia_Ilustrado_{chave_doenca}_{nome_paciente}.png",
+            mime="image/png"
+        )
